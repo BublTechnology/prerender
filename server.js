@@ -6,15 +6,24 @@ var server = prerender({
     iterations: process.env.PRERENDER_NUM_ITERATIONS
 });
 
-
 server.use(prerender.sendPrerenderHeader());
 // server.use(prerender.basicAuth());
-// server.use(prerender.whitelist());
+
+if (process.env.ALLOWED_DOMAINS) {
+  console.log('Whitelist enabled for domains', process.env.ALLOWED_DOMAINS);
+  server.use(prerender.whitelist());
+}
+
 server.use(prerender.blacklist());
-// server.use(prerender.logger());
+server.use(prerender.logger());
 server.use(prerender.removeScriptTags());
 server.use(prerender.httpHeaders());
 // server.use(prerender.inMemoryHtmlCache());
-// server.use(prerender.s3HtmlCache());
+
+if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY && process.env.S3_BUCKET_NAME) {
+  console.log('S3 cache enabled, Using bucket', process.env.S3_BUCKET_NAME);
+  server.use(prerender.s3HtmlCache());
+}
+
 
 server.start();
