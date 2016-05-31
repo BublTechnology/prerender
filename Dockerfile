@@ -6,5 +6,9 @@ COPY . /usr/src/app
 RUN apt-get update && apt-get install bzip2
 RUN apt-get -y install libfontconfig
 RUN npm install phantomjs -g
+RUN npm install pm2 -g
 
-CMD cd /usr/src/app && npm install && npm start
+WORKDIR /usr/src/app
+RUN npm install
+
+CMD pm2 start --no-daemon --max-memory-restart 100M server.js
