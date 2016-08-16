@@ -1,14 +1,19 @@
 FROM node:4-slim
 EXPOSE 3000
 
-COPY . /usr/src/app
+ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get update && apt-get install -y \
+      bzip2 \
+      libfontconfig \
+    && rm -rf /var/lib/apt/lists/*
+RUN npm install phantomjs pm2 -g
 
-RUN apt-get update && apt-get install bzip2
-RUN apt-get -y install libfontconfig
-RUN npm install phantomjs -g
-RUN npm install pm2 -g
-
-WORKDIR /usr/src/app
+ENV APP_HOME /usr/src/app
+RUN mkdir -p $APP_HOME
+COPY package.json $APP_HOME
+WORKDIR $APP_HOME
 RUN npm install
 
-CMD pm2 start --no-daemon --max-memory-restart 100M server.js
+COPY . /usr/src/app
+
+CMD ["pm2", "start", "--no-daemon", "--max-memory-restart", "100M", "server.js"]
